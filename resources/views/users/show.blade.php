@@ -19,7 +19,10 @@
                         <p>{{$user->introduction}}</p>
                         <hr>
                         <h4><strong>注册于</strong></h4>
-                        <p>{{$user->created_at->diffForHumans()}}</p>
+                        <p>{{ $user->created_at->diffForHumans() }}</p>
+                        <hr>
+                        <h4><strong>最后活跃</strong></h4>
+                        <p title="{{  $user->last_actived_at }}">{{ $user->last_actived_at->diffForHumans() }}</p>
                     </div>
                 </div>
             </div>
@@ -38,10 +41,21 @@
         {{-- 用户发布的内容 --}}
         <div class="panel panel-default">
             <div class="panel-body">
-                暂无数据 ~_~
+                <ul class="nav nav-tabs">
+                    <li class="{{ active_class(if_query('tab', null)) }}">
+                        <a href="{{ route('users.show', $user->id) }}">Ta 的话题</a>
+                    </li>
+                    <li class="{{ active_class(if_query('tab', 'replies')) }}">
+                        <a href="{{ route('users.show', [$user->id, 'tab' => 'replies']) }}">Ta 的回复</a>
+                    </li>
+                </ul>
+                @if (if_query('tab', 'replies'))
+                    @include('users._replies', ['replies' => $user->replies()->with('topic')->recent()->paginate(5)])
+                @else
+                    @include('users._topics', ['topics' => $user->topics()->recent()->paginate(5)])
+                @endif
             </div>
         </div>
-
     </div>
 </div>
 @stop

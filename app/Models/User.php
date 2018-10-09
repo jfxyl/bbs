@@ -2,12 +2,19 @@
 
 namespace App\Models;
 
+use Auth;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use Notifiable;
+	use HasRoles;
+    use Notifiable {
+		notify as protected laravelNotify;
+	}
+	use Traits\ActiveUserHelper;
+	use Traits\LastActivedAtHelper;
 
     /**
      * The attributes that are mass assignable.
@@ -25,5 +32,50 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password', 'remember_token',
-    ];
+	];
+	
+	public function topics()
+	{
+		return $this->hasMany(Topic::class);
+	}
+
+	public function replies()
+	{
+		return $this->hasMany(Reply::class);
+	}
+
+	public function notify($instance){
+		if($this->id == Auth::id()){
+			return;
+		}
+		$this->increment('notification_count');
+		$this->laravelNotify($instance);
+	}
+
+	public function markAsRead()
+	{
+		$this->notification_count = 0;
+		$this->save();
+		$this->unreadNotifications->markAsRead();
+	}
+
+	public function setPasswordAttribute($value)
+	{
+		// 如果值的长度等于 60，即认为是已经做过加密的情况
+        if (strlen($value) != 60) {
+
+            // 不等于 60，做密码加密处理
+            $value = bcrypt($value);
+        }
+		$this->attributes['password'] = bcrypt($value);
+	}
+
+	public function setAvatarAttribute($value)
+	{
+		if(!starts_with($value,'http')){
+			$value = url('/uploads/images/avatars/'.$value);
+			// $value = config('app.url').'/uploads/images/avatars/'.$value;
+		}
+		$this->attributes['avatar'] = $value;
+	}
 }
