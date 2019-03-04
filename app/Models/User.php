@@ -6,8 +6,9 @@ use Auth;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Spatie\Permission\Traits\HasRoles;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
 	use HasRoles;
     use Notifiable {
@@ -22,8 +23,9 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password','avatar','introduction'
-    ];
+		'name', 'phone', 'email', 'password', 'introduction', 'avatar',
+		'weixin_openid', 'weixin_unionid','weixin_session_key', 'weapp_openid'
+	];
 
     /**
      * The attributes that should be hidden for arrays.
@@ -33,6 +35,18 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
 	];
+
+	protected $dates = ['last_actived_at','created_at','updated_at'];
+	
+	public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 	
 	public function topics()
 	{
@@ -67,7 +81,7 @@ class User extends Authenticatable
             // 不等于 60，做密码加密处理
             $value = bcrypt($value);
         }
-		$this->attributes['password'] = bcrypt($value);
+		$this->attributes['password'] = $value;
 	}
 
 	public function setAvatarAttribute($value)

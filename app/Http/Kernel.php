@@ -36,7 +36,8 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\VerifyCsrfToken::class,
 			\Illuminate\Routing\Middleware\SubstituteBindings::class,
 			// 记录用户最后活跃时间
-            \App\Http\Middleware\RecordLastActivedTime::class,
+			\App\Http\Middleware\RecordLastActivedTime::class,
+			
         ],
 
         'api' => [
@@ -58,6 +59,8 @@ class Kernel extends HttpKernel
         'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+		'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+		// 接口语言设置
+		'change-locale' => \App\Http\Middleware\ChangeLocale::class,
     ];
 }
